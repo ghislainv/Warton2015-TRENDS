@@ -1,0 +1,30 @@
+model { 
+	 ## Likelihood 
+	 for(i in 1:n) { for(j in 1:p) {
+		 eta[i,j] <- all.params[j,1]  + site.params[i] + enviro[i]*X.params[j] + pow(enviro[i],2)*quad.X.params + inter.params*enviro[i]*traits[j]+ inprod(all.params[j,2:(num.lv+1)],lvs[i,])
+		 Z[i,j] ~ dnorm(eta[i,j],1)
+		 y[i,j] ~ dbern(step(Z[i,j])) 
+ 		 } } 
+
+	 for(i in 1:n) { for(k in 1:num.lv) { lvs[i,k] ~ dnorm(0,1) } } ## Prior distributions for LVs 
+
+	 for(i in 1:p) { all.params[i,1] ~ dnorm(0,0.01) } ## Species intercept 
+
+	 quad.X.params ~ dnorm(0,0.01) 
+
+	 sigma2.X.eff ~ dgamma(0.01,0.01) 
+	 mean.X.eff ~ dnorm(0,0.01)
+	 for(j in 1:p) { X.params[j] ~ dnorm(mean.X.eff,1/sigma2.X.eff) } 
+
+	 for(i in 1:(num.lv-1)) { for(j in (i+2):(num.lv+1)) { all.params[i,j] <- 0 } } ## Constraints to 0 on upper diagonal
+	 for(i in 1:num.lv) { all.params[i,i+1] ~ dunif(0,20) } ## Sign constraints on diagonal elements
+	 for(i in 2:num.lv) { for(j in 2:i) { all.params[i,j] ~ dnorm(0,0.05) } } ## Free lower diagonals
+	 for(i in (num.lv+1):p) { for(j in 2:(num.lv+1)) { all.params[i,j] ~ dnorm(0,0.05) } } ## All other elements 
+
+	 inter.params ~ dnorm(0,0.01) ## Fourth-corner coefficient 
+
+	 for(i in 1:n) { site.params[i] ~ dnorm(0,1/sigma2.site) } 
+	 sigma2.site ~ dunif(0,100) ## Site random effect 
+
+
+	 }

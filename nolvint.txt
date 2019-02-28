@@ -1,0 +1,23 @@
+model { 
+	 ## Likelihood 
+	 for(i in 1:n) { for(j in 1:p) {
+		 eta[i,j] <- all.params[j,1]  + site.params[i] + enviro[i]*X.params[j] + pow(enviro[i],2)*quad.X.params + inter.params*enviro[i]*traits[j]
+		 Z[i,j] ~ dnorm(eta[i,j],1)
+		 y[i,j] ~ dbern(step(Z[i,j])) 
+ 		 } } 
+
+	 for(i in 1:p) { all.params[i,1] ~ dnorm(0,0.01) } ## Species intercept 
+
+	 quad.X.params ~ dnorm(0,0.01) 
+
+	 sigma2.X.eff ~ dgamma(0.01,0.01) 
+	 mean.X.eff ~ dnorm(0,0.01)
+	 for(j in 1:p) { X.params[j] ~ dnorm(mean.X.eff,1/sigma2.X.eff) } 
+
+	 inter.params ~ dnorm(0,0.01) ## Fourth-corner coefficient 
+
+	 for(i in 1:n) { site.params[i] ~ dnorm(0,1/sigma2.site) } 
+	 sigma2.site ~ dunif(0,100) ## Site random effect 
+
+
+	 }
